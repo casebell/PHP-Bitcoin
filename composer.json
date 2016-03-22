@@ -16,7 +16,7 @@
   },
   "autoload": {
     "psr-4": {
-      "liamwli\\PHPBitcoin": ""
+      "liamwli\\PHPBitcoin\\": ""
     }
   }
 }
