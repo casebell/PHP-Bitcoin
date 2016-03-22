@@ -1,0 +1,17 @@
+{
+  "name": "liamwli/php-bitcoin",
+  "description": "BitCoin PHP Class",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Liam Williams",
+      "email": "l.s.w5559@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "lib-curl": "*",
+    "ext-json": "*"
+  }
+}
