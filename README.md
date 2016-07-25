@@ -6,7 +6,7 @@ Composer
 
 ```
 "require": {
-  "liamwli/php-bitcoin":"1.0.0"
+  "liamwli/php-bitcoin":"1.0.2"
 }
 ```
 
