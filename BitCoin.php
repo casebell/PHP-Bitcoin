@@ -12,12 +12,24 @@ class BitCoin
 	/**
 	 * Connect using secure http.
 	 */
-	const PROTOCOL_SSL = "https";
+	const PROTOCOL_HTTPS = "https";
 
 	/**
 	 * Connect using plain http.
 	 */
 	const PROTOCOL_HTTP = "http";
+
+	/**
+	 * Use with @see {setOption}
+	 *
+	 * Controls the response format. Use constants RESPONSE_ASSOC_ARRAY or RESPONSE_CLASS_FIELDS.
+	 */
+	const OPTION_RESPONSE_FORMAT = 'optionResponseFormat';
+
+	const RESPONSE_ASSOC_ARRAY  = 'assocArray';
+	const RESPONSE_CLASS_FIELDS = 'classFields';
+
+	protected $_options = array();
 
 	protected $_user;
 	protected $_password;
@@ -25,7 +37,7 @@ class BitCoin
 	protected $_port;
 
 	protected $_protocol = self::PROTOCOL_HTTP;
-	protected $_cert = null;
+	protected $_cert     = null;
 
 	protected $_status;
 	protected $_error;
@@ -61,14 +73,15 @@ class BitCoin
 	 *
 	 * @param string $protocol The protocol to use. The PROTOCOL_ constants should be used.
 	 *
+	 * @return $this This object for method chaining.
 	 * @throws BitCoinException Thrown if invalid protocol value passed.
-	 * @deprecated JSON-RPC over SSL has been deprecated and removed from newer bitcoin-core versions.
+	 * @deprecated JSON-RPC over SSL has been deprecated and will be removed from newer bitcoin-core versions.
 	 */
 	public function setProtocol($protocol)
 	{
 		switch ($protocol)
 		{
-			case self::PROTOCOL_SSL:
+			case self::PROTOCOL_HTTPS:
 				$this->_protocol = "https";
 				break;
 			case self::PROTOCOL_HTTP:
@@ -77,6 +90,8 @@ class BitCoin
 			default:
 				throw new BitCoinException("Invalid Protocol");
 		}
+
+		return $this;
 	}
 
 	/**
@@ -86,8 +101,9 @@ class BitCoin
 	 *
 	 * @param $filePath
 	 *
+	 * @return $this This object for method chaining.
 	 * @throws BitCoinException
-	 * @deprecated JSON-RPC over SSL has been deprecated and removed from newer bitcoin-core versions.
+	 * @deprecated JSON-RPC over SSL has been deprecated and will be removed from newer bitcoin-core versions.
 	 */
 	public function setCertificate($filePath)
 	{
@@ -97,7 +113,42 @@ class BitCoin
 		}
 
 		$this->_cert = realpath($filePath);
-		$this->setProtocol(self::PROTOCOL_SSL);
+		$this->setProtocol(self::PROTOCOL_HTTPS);
+
+		return $this;
+	}
+
+	/**
+	 * Set an option.
+	 *
+	 * @param $option
+	 * @param $optionValue
+	 *
+	 * @return $this This object for method chaining.
+	 */
+	public function setOption($option, $optionValue)
+	{
+		$this->_options[$option] = $optionValue;
+
+		return $this;
+	}
+
+	/**
+	 * Gets an option value. If option isn't set, option value is set to $defaultValue and returned.
+	 *
+	 * @param $option
+	 * @param $defaultValue
+	 *
+	 * @return mixed
+	 */
+	public function getOption($option, $defaultValue)
+	{
+		if (!isset($this->_options[$option]))
+		{
+			$this->setOption($option, $defaultValue);
+		}
+
+		return $this->_options[$option];
 	}
 
 	/**
@@ -154,7 +205,9 @@ class BitCoin
 		curl_setopt_array($curlResource, $curlOptions);
 
 		$this->_rawResponse = curl_exec($curlResource);
-		$this->_response = json_decode($this->_rawResponse, true);
+
+		$this->_response = json_decode($this->_rawResponse,
+			$this->getOption(self::OPTION_RESPONSE_FORMAT, self::RESPONSE_ASSOC_ARRAY) == self::RESPONSE_ASSOC_ARRAY);
 
 		$this->_status = curl_getinfo($curlResource, CURLINFO_HTTP_CODE);
 
